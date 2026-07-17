@@ -1,0 +1,157 @@
+#
+# Copyright (C) 2024 The Android Open Source Project
+# Copyright (C) 2024 TeamWin Recovery Project
+#
+# SPDX-License-Identifier: Apache-2.0
+#
+
+DEVICE_PATH := device/motorola/tb8789p1_64
+
+# Architecture
+TARGET_ARCH := arm64
+TARGET_ARCH_VARIANT := armv8-a
+TARGET_CPU_ABI := arm64-v8a
+TARGET_CPU_ABI2 :=
+TARGET_CPU_VARIANT := generic
+TARGET_CPU_VARIANT_RUNTIME := cortex-a76
+
+TARGET_2ND_ARCH := arm
+TARGET_2ND_ARCH_VARIANT := armv8-a
+TARGET_2ND_CPU_ABI := armeabi-v7a
+TARGET_2ND_CPU_ABI2 := armeabi
+TARGET_2ND_CPU_VARIANT := generic
+TARGET_2ND_CPU_VARIANT_RUNTIME := cortex-a55
+
+# Assert
+TARGET_OTA_ASSERT_DEVICE := tb8789p1_64,mototabg70LTE
+
+# Bootloader
+TARGET_BOOTLOADER_BOARD_NAME := tb8789p1_64
+TARGET_NO_BOOTLOADER := true
+
+# Platform
+TARGET_BOARD_PLATFORM := MT6785
+
+# Kernel
+BOARD_KERNEL_CMDLINE := bootopt=64S3,32N2,64N2 buildvariant=user
+BOARD_KERNEL_BASE := 0x40000000
+BOARD_KERNEL_PAGESIZE := 2048
+BOARD_KERNEL_OFFSET := 0x00080000
+BOARD_RAMDISK_OFFSET := 0x07c80000
+BOARD_KERNEL_TAGS_OFFSET := 0x0bc80000
+BOARD_DTB_OFFSET := 0x0bc80000
+BOARD_BOOT_HEADER_VERSION := 2
+
+BOARD_MKBOOTIMG_ARGS := --kernel_offset 0x00080000 --ramdisk_offset 0x07c80000 --tags_offset 0x0bc80000 --header_version 2 --dtb_offset 0x0bc80000
+
+BOARD_KERNEL_IMAGE_NAME := kernel
+TARGET_PREBUILT_KERNEL := $(DEVICE_PATH)/prebuilt/kernel
+TARGET_PREBUILT_DTB := $(DEVICE_PATH)/prebuilt/dtb.img
+BOARD_INCLUDE_DTB_IN_BOOTIMG := true
+
+# Partitions
+BOARD_BOOTIMAGE_PARTITION_SIZE := 33554432
+TW_EXTRA_LANGUAGES := false
+BOARD_DTBOIMG_PARTITION_SIZE := 8388608
+BOARD_FLASH_BLOCK_SIZE := 524288
+
+TARGET_USERIMAGES_USE_EXT4 := true
+
+# Dynamic Partitions
+BOARD_SUPER_PARTITION_SIZE := 6442450944
+BOARD_SUPER_PARTITION_GROUPS := motorola_dynamic_partitions
+BOARD_MOTOROLA_DYNAMIC_PARTITIONS_PARTITION_LIST := product system vendor
+BOARD_MOTOROLA_DYNAMIC_PARTITIONS_SIZE := 6438256640
+TW_USE_DYNAMIC_PARTITIONS := true
+TW_INCLUDE_LOGICAL_PROGS := false
+
+# A/B
+AB_OTA_UPDATER := true
+AB_OTA_PARTITIONS += \
+    boot \
+    system \
+    vendor \
+    product \
+    vendor_boot \
+    vbmeta \
+    vbmeta_system \
+    vbmeta_vendor \
+    preloader \
+    md1img \
+    spmfw \
+    scp \
+    sspm \
+    lk \
+    tee \
+    dtbo \
+    cam_vpu1 \
+    cam_vpu2 \
+    cam_vpu3 \
+    gz \
+    product
+
+# Virtual A/B
+ENABLE_VIRTUAL_AB := true
+
+# Recovery
+BOARD_USES_RECOVERY_AS_BOOT := true
+TARGET_NO_RECOVERY := true
+BOARD_HAS_LARGE_FILES := true
+BOARD_HAS_NO_SELECT_BUTTON := true
+BOARD_RECOVERY_MISC_PARTITION := /dev/block/platform/bootdevice/by-name/misc
+TARGET_RECOVERY_PIXEL_FORMAT := RGBX_8888
+TARGET_USERIMAGES_USE_EXT4 := true
+TARGET_USERIMAGES_USE_F2FS := true
+BOARD_SUPPRESS_SECURE_ERASE := true
+RECOVERY_SDCARD_ON_DATA := true
+
+# Platform
+BOARD_HAS_MTK_HARDWARE := true
+
+# Verified Boot
+BOARD_AVB_ENABLE := true
+BOARD_AVB_ROLLBACK_INDEX := $(PLATFORM_SECURITY_PATCH_TIMESTAMP)
+BOARD_AVB_RECOVERY_KEY_PATH := device/mediatek/vendor/common/key/rsa2048/recovery_prvk.pem
+BOARD_AVB_RECOVERY_ALGORITHM := SHA256_RSA2048
+BOARD_AVB_RECOVERY_ROLLBACK_INDEX := $(BOARD_AVB_ROLLBACK_INDEX)
+BOARD_AVB_RECOVERY_ROLLBACK_INDEX_LOCATION := 1
+BOARD_AVB_MAKE_VBMETA_IMAGE_ARGS += --flags 3
+
+# Vendor Modules
+TW_LOAD_VENDOR_MODULES := "all"
+TW_LOAD_VENDOR_MODULES_EXCLUDE_GKI := true
+
+PLATFORM_VERSION := 12
+PLATFORM_SECURITY_PATCH := 2024-01-05
+VENDOR_SECURITY_PATCH := 2024-01-05
+PLATFORM_VERSION_LAST_STABLE := 12
+
+# TWRP Configuration
+TW_THEME := portrait_hdpi
+TW_ROTATION := 180
+TW_EVENT_LOGGING := false
+TW_NO_SCREEN_BLANK := true
+TW_SCREEN_BLANK_ON_BOOT := true
+TW_USE_TOOLBOX := true
+TW_INCLUDE_RESETPROP := false
+TW_INCLUDE_REPACKTOOLS := false
+TW_INPUT_BLACKLIST := "hbtp_vm|SX933x Cap Touch|hid-over-i2c|hall-switch-input|himax-pen"
+TW_SUPPORT_INPUT_1_2_EVDEV := true
+TW_NO_SCREEN_BLANK := true
+TW_BRIGHTNESS_PATH := "/sys/class/leds/lcd-backlight/brightness"
+TW_MAX_BRIGHTNESS := 255
+TW_DEFAULT_BRIGHTNESS := 150
+TW_EXCLUDE_APEX := true
+TW_INCLUDE_RESETPROP := true
+TW_INCLUDE_REPACKTOOLS := true
+TW_INCLUDE_FASTBOOTD := false
+TW_STATUS_ICONS_ALIGN := center
+TW_CUSTOM_CPU_POS := "50"
+TW_EXTRA_LANGUAGES := false
+TARGET_RECOVERY_FSTAB := $(DEVICE_PATH)/recovery.fstab
+
+TARGET_COPY_OUT_VENDOR := vendor
+LZMA_RAMDISK_TARGETS := boot recovery
+TW_NO_EXFAT_FUSE := true
+BUILD_BROKEN_ELF_PREBUILT_PRODUCT_COPY_FILES := true
+
