@@ -1,7 +1,6 @@
 on init
     setprop sys.usb.configfs 1
     setprop sys.usb.ffs.aio_compat 1
-    setprop sys.usb.controller musb-hdrc
     setprop ro.hardware.gatekeeper beanpod
 
     # pstore/ramoops previous console log
@@ -15,11 +14,53 @@ on init
 
 on fs && property:ro.debuggable=0
     # distinguish USB shoulde connect or not, i.e. CDP vs SDP
-    write /sys/class/udc/musb-hdrc/device/cmode 2
+    write /sys/class/udc/${sys.usb.controller}/device/cmode 2
     # set charging free due to it wait for USB activation
     start adbd
 
+on fs
+    # Mount persist so TEE can access RPMB data
+    wait /dev/block/by-name/persist
+    mount ext4 /dev/block/by-name/persist /persist rw
+    mount ext4 /dev/block/by-name/persist /mnt/vendor/persist rw
+
 on post-fs
+    # Create TEE directories to prevent deadlock
+    mkdir /data/vendor 0755 system system
+    mkdir /data/vendor/thh 0755 system system
+    mkdir /data/vendor/thh/system 0755 system system
+    mkdir /data/vendor/thh/tee_00 0755 system system
+    mkdir /data/vendor/thh/tee_01 0755 system system
+    mkdir /data/vendor/thh/tee_02 0755 system system
+    mkdir /data/vendor/thh/tee_03 0755 system system
+    mkdir /data/vendor/thh/tee_04 0755 system system
+    mkdir /data/vendor/thh/tee_05 0755 system system
+    mkdir /data/vendor/thh/tee_06 0755 system system
+    mkdir /data/vendor/thh/tee_07 0755 system system
+    mkdir /data/vendor/thh/tee 0755 system system
+    mkdir /data/vendor/thh/tee/tas 0755 system system
+    mkdir /data/vendor/thh/tee_08 0755 system system
+    mkdir /data/vendor/thh/tee_09 0755 system system
+    mkdir /data/vendor/thh/tee_0A 0755 system system
+    mkdir /data/vendor/thh/tee_0B 0755 system system
+    mkdir /data/vendor/thh/tee_0C 0755 system system
+    mkdir /data/vendor/thh/tee_0D 0755 system system
+    mkdir /data/vendor/thh/tee_0E 0755 system system
+    mkdir /data/vendor/thh/tee_0F 0755 system system
+    mkdir /data/vendor/thh/ta 0755 system system
+    mkdir /data/vendor/thh/tee_log 0755 system system
+    mkdir /data/vendor/key_provisioning 0771 system system
+    mkdir /data/vendor/gatekeeper 0771 system system
+
+    mkdir /mnt/vendor 0755 system system
+    mkdir /mnt/vendor/persist 0771 system system
+    mkdir /persist 0771 system system
+    
+    mkdir /mnt/vendor/persist/rpmb 0771 system system
+    mkdir /persist/rpmb 0771 system system
+    mkdir /vendor/persist 0771 system system
+    mkdir /vendor/persist/rpmb 0771 system system
+
     # Support A/B feature for EMMC and UFS boot region
     wait /dev/block/mmcblk0boot0 2
     symlink /dev/block/sda /dev/block/mmcblk0boot0

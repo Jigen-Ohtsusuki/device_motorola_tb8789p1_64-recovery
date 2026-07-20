@@ -12,23 +12,22 @@ This is the TWRP (TeamWin Recovery Project) device tree for the Motorola Moto Ta
 | **Release Date** | January 2022 |
 | **Android Version** | Android 11 (Upgradable to 12) |
 
-## Build Status (Initial Bring-up)
+## Build Status
 
-This is a lightweight, **decryption-less** initial build of TWRP. Due to strict size limitations on the `boot` partition (32MB limit) and kernel incompatibilities with LZMA compression, hardware encryption services (Keymaster/Gatekeeper) have been stripped from this tree. 
+This is a fully functional build of TWRP for Android 12, featuring fully working Keystore2 FBE decryption. It uses LZMA ramdisk compression to fit hardware encryption services within the strict 32MB `boot` partition limit.
 
 ### What Works:
 - [x] Booting TWRP
 - [x] Touchscreen
 - [x] Screen brightness settings
 - [x] ADB & Fastbootd
-- [x] MTP (Media Transfer Protocol)
-- [x] Flashing (Magisk, no ROMs yet for this tab)
-- [x] Backup & Restore (Unencrypted partitions)
+- [x] MTP (Media Transfer Protocol) - Fixed FFS configfs coexistence
+- [x] Decryption of `/data` (Android 12 Keystore2 FBE)
+- [x] Flashing Zips & Magisk
+- [x] Backup & Restore
 
-### Known Issues / TO-DO:
-- [ ] Decryption of `/data` (FBE/Keystore2 unsupported in this lightweight build)
-- [ ] ADB Sideload (Requires testing)
-- [ ] USB OTG (Requires testing)
+### Known Issues:
+- None identified at this time!
 
 ---
 
@@ -51,7 +50,18 @@ Clone this repository into the appropriate device directory:
 git clone https://github.com/Jigen-Ohtsusuki/android_device_motorola_tb8789p1_64-recovery device/motorola/tb8789p1_64
 ```
 
-### 3. Build the Recovery Image
+### 3. Apply TWRP Source Patches
+Because of MediaTek kernel quirks regarding `fscrypt-provisioning` and some Keystore2 dependencies, a few modifications to the TWRP source tree are required before building. 
+
+To instantly apply all necessary fixes to your TWRP tree, run the provided patch script:
+
+```bash
+cd device/motorola/tb8789p1_64
+bash patches/apply-patches.sh
+cd ../../../
+```
+
+### 4. Build the Recovery Image
 Set up the build environment, select the device target, and compile the `bootimage` (as this device uses `BOARD_USES_RECOVERY_AS_BOOT`):
 
 ```bash
@@ -63,15 +73,12 @@ mka bootimage
 
 ---
 
-## Installation & Testing
-
-> [!WARNING]
-> Because this is a decryption-less TWRP build, the `/data` partition cannot be decrypted. **If you plan to flash Magisk, you MUST Format Data (wipe) first.** Otherwise, TWRP will not be able to mount your internal storage properly.
+## Installation
 
 Once the build is complete, you can find the compiled image at:  
 `out/target/product/tb8789p1_64/boot.img`
 
-To test the image, reboot your device to the bootloader/fastboot mode and flash it directly to the boot partition:
+To install the image, reboot your device to the bootloader/fastboot mode and flash it directly to the boot partition:
 
 ```bash
 # Reboot to bootloader
@@ -87,5 +94,7 @@ fastboot reboot recovery
 ---
 
 ## Kernel Source
-This device tree currently uses a **precompiled stock kernel**. 
-If a custom kernel is built in the future with LZMA ramdisk decompression support, encryption services can be reintroduced into this tree.
+The kernel (`Image.gz`) used in this tree is built from the Lenovo P11 Plus kernel source, which is being actively maintained for the Moto Tab G70. 
+
+You can find the kernel source code here:
+[android_kernel_motorola_mt6785](https://github.com/Jigen-Ohtsusuki/android_kernel_motorola_mt6785)

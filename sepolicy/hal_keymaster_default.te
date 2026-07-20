@@ -1,0 +1,4 @@
+type mtk_hal_keymaster, domain;
+type mtk_hal_keymaster_exec, exec_type, file_type;
+init_daemon_domain(mtk_hal_keymaster)
+permissive mtk_hal_keymaster;

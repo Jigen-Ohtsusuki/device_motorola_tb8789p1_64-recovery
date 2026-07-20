@@ -1,0 +1,91 @@
+diff --git a/partition.cpp b/partition.cpp
+index 184cb16..bcae30f 100755
+--- a/partition.cpp
++++ b/partition.cpp
+@@ -727,6 +727,8 @@ void TWPartition::Setup_Data_Partition(bool Display_Error) {
+ 			} else {
+ 				Is_Encrypted = true;
+ 				Is_Decrypted = false;
++				Is_FBE = true;
++				DataManager::SetValue(TW_IS_FBE, 1);
+ 				if (datamedia)
+ 					Setup_Data_Media();
+ 			}
+@@ -778,7 +780,7 @@ void TWPartition::Set_FBE_Status() {
+ }
+ 
+ bool TWPartition::Decrypt_FBE_DE() {
+-	if (TWFunc::Path_Exists("/data/unencrypted/key/version")) {
++	if (TWFunc::Path_Exists("/data/unencrypted/key/version") || TWFunc::Path_Exists("/metadata/vold/metadata_encryption/key")) {
+ 		DataManager::SetValue(TW_IS_FBE, 1);
+ 		PartitionManager.Set_Crypto_State();
+ 		PartitionManager.Set_Crypto_Type("file");
+@@ -1690,7 +1692,9 @@ bool TWPartition::Mount(bool Display_Error) {
+ 
+ 	if (!exfat_mounted &&
+ 		mount(Actual_Block_Device.c_str(), Mount_Point.c_str(), mount_fs.c_str(), flags, Mount_Options.c_str()) != 0 &&
+-		mount(Actual_Block_Device.c_str(), Mount_Point.c_str(), mount_fs.c_str(), flags, NULL) != 0) {
++		mount(Actual_Block_Device.c_str(), Mount_Point.c_str(), mount_fs.c_str(), flags, NULL) != 0 &&
++		mount(Actual_Block_Device.c_str(), Mount_Point.c_str(), mount_fs.c_str(), flags | MS_RDONLY, Mount_Options.c_str()) != 0 &&
++		mount(Actual_Block_Device.c_str(), Mount_Point.c_str(), mount_fs.c_str(), flags | MS_RDONLY, NULL) != 0) {
+ #ifdef TW_NO_EXFAT_FUSE
+ 		if (Current_File_System == "exfat") {
+ 			LOGINFO("Mounting exfat failed, trying vfat...\n");
+diff --git a/partitionmanager.cpp b/partitionmanager.cpp
+index 2766b4c..90fb7a0 100755
+--- a/partitionmanager.cpp
++++ b/partitionmanager.cpp
+@@ -3302,7 +3302,7 @@ void TWPartitionManager::Set_Active_Slot(const string& Slot) {
+ 	LOGINFO("Setting active slot %s\n", Slot.c_str());
+ #ifdef AB_OTA_UPDATER
+ 	if (!Active_Slot_Display.empty()) {
+-		android::sp<IBootControl> module = IBootControl::getService();
++		android::sp<IBootControl> module = IBootControl::tryGetService();
+ 		if (module == nullptr) {
+ 			LOGERR("Error getting bootctrl module.\n");
+ 		} else {
+diff --git a/prebuilt/Android.mk b/prebuilt/Android.mk
+index 3197ec1..bfbdb86 100755
+--- a/prebuilt/Android.mk
++++ b/prebuilt/Android.mk
+@@ -39,7 +39,7 @@ ifneq ($(wildcard external/one-true-awk/Android.bp),)
+ endif
+ 
+ ifneq ($(filter $(PRODUCT_USE_DYNAMIC_PARTITIONS) $(TW_INCLUDE_FASTBOOTD),true),)
+-RECOVERY_BINARY_SOURCE_FILES += $(TARGET_RECOVERY_ROOT_OUT)/system/bin/fastbootd
++# RECOVERY_BINARY_SOURCE_FILES += $(TARGET_RECOVERY_ROOT_OUT)/system/bin/fastbootd
+ endif
+ RECOVERY_BINARY_SOURCE_FILES += $(TARGET_OUT_EXECUTABLES)/bc
+ RECOVERY_BINARY_SOURCE_FILES += $(TARGET_OUT_EXECUTABLES)/e2fsck
+@@ -279,7 +279,7 @@ ifneq ($(filter $(TW_INCLUDE_CRYPTO) $(TW_SUPPORT_INPUT_AIDL_HAPTICS), true),)
+     RECOVERY_LIBRARY_SOURCE_FILES += $(TARGET_OUT_SHARED_LIBRARIES)/android.hardware.vibrator-V2-ndk_platform.so
+ endif
+ ifeq ($(AB_OTA_UPDATER), true)
+-    RECOVERY_BINARY_SOURCE_FILES += $(TARGET_RECOVERY_ROOT_OUT)/system/bin/update_engine_sideload
++    # RECOVERY_BINARY_SOURCE_FILES += $(TARGET_RECOVERY_ROOT_OUT)/system/bin/update_engine_sideload
+     RECOVERY_BINARY_SOURCE_FILES += $(TARGET_OUT_VENDOR_EXECUTABLES)/hw/android.hardware.boot@1.0-service
+     RECOVERY_BINARY_SOURCE_FILES += $(TARGET_OUT_VENDOR_EXECUTABLES)/hw/android.hardware.boot@1.1-service
+     RECOVERY_BINARY_SOURCE_FILES += $(TARGET_OUT_VENDOR_EXECUTABLES)/hw/android.hardware.boot@1.2-service
+diff --git a/twrp.cpp b/twrp.cpp
+index eedc581..2704b62 100644
+--- a/twrp.cpp
++++ b/twrp.cpp
+@@ -58,6 +58,8 @@ extern "C" {
+ #include "variables.h"
+ #include "startupArgs.hpp"
+ #include "twrpAdbBuFifo.hpp"
++#include <binder/ProcessState.h>
++#include <android/binder_process.h>
+ #ifdef TW_USE_NEW_MINADBD
+ // #include "minadbd/minadbd.h"
+ #else
+@@ -342,6 +344,9 @@ static void reboot() {
+ }
+ 
+ int main(int argc, char **argv) {
++    // Initialize Binder Thread Pools for keystore2 decryption
++    android::ProcessState::self()->startThreadPool();
++    ABinderProcess_startThreadPool();
+ 	// Recovery needs to install world-readable files, so clear umask
+ 	// set by init
+ 	umask(0);

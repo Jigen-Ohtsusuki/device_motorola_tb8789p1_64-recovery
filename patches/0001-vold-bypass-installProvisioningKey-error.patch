@@ -1,0 +1,55 @@
+diff --git a/Checkpoint.cpp b/Checkpoint.cpp
+index 755f0e3..3ad3cae 100644
+--- a/Checkpoint.cpp
++++ b/Checkpoint.cpp
+@@ -128,7 +128,7 @@ Status cp_startCheckpoint(int retry) {
+     if (retry < -1) return error(EINVAL, "Retry count must be more than -1");
+     std::string content = std::to_string(retry + 1);
+     if (retry == -1) {
+-        sp<IBootControl> module = IBootControl::getService();
++        sp<IBootControl> module = IBootControl::tryGetService();
+         if (module) {
+             std::string suffix;
+             auto cb = [&suffix](hidl_string s) { suffix = s; };
+@@ -162,7 +162,7 @@ Status cp_commitChanges() {
+             << "NOT COMMITTING CHECKPOINT BECAUSE persist.vold.dont_commit_checkpoint IS 1";
+         return Status::ok();
+     }
+-    sp<IBootControl> module = IBootControl::getService();
++    sp<IBootControl> module = IBootControl::tryGetService();
+     if (module) {
+         CommandResult cr;
+         module->markBootSuccessful([&cr](CommandResult result) { cr = result; });
+@@ -254,7 +254,7 @@ bool cp_needsRollback() {
+         if (content == "0") return true;
+         if (content.substr(0, 3) == "-1 ") {
+             std::string oldSuffix = content.substr(3);
+-            sp<IBootControl> module = IBootControl::getService();
++            sp<IBootControl> module = IBootControl::tryGetService();
+             std::string newSuffix;
+ 
+             if (module) {
+@@ -276,7 +276,7 @@ bool cp_needsCheckpoint() {
+ 
+     bool ret;
+     std::string content;
+-    sp<IBootControl> module = IBootControl::getService();
++    sp<IBootControl> module = IBootControl::tryGetService();
+ 
+     if (isCheckpointing) return isCheckpointing;
+ 
+diff --git a/KeyUtil.cpp b/KeyUtil.cpp
+index 9273564..2f1766a 100644
+--- a/KeyUtil.cpp
++++ b/KeyUtil.cpp
+@@ -314,7 +314,9 @@ bool installKey(const std::string& mountpoint, const EncryptionOptions& options,
+     std::string ref = keyrefstring(policy->key_raw_ref);
+     LOG(INFO) << "Installed fscrypt key with ref " << ref << " to " << mountpoint;
+ 
+-    if (!installProvisioningKey(key, ref, arg->key_spec)) return false;
++    if (!installProvisioningKey(key, ref, arg->key_spec)) {
++        LOG(WARNING) << "Failed to install provisioning key, but ignoring in TWRP to allow decryption!";
++    }
+     return true;
+ }
+ 

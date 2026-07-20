@@ -1,0 +1,13 @@
+diff --git a/build/hidl_interface.go b/build/hidl_interface.go
+index 8ce3e4b..c93a50d 100644
+--- a/build/hidl_interface.go
++++ b/build/hidl_interface.go
+@@ -930,7 +930,7 @@ This corresponds to the "-r%s:<some path>" option that would be passed into hidl
+ 		specDependencies := append(cppDependencies, name.string())
+ 		mctx.CreateModule(cc.FuzzFactory, &ccProperties{
+ 			Name:        proptools.StringPtr(name.vtsFuzzerName()),
+-			Defaults:    []string{"vts_proto_fuzzer_default"},
++			Defaults:    []string{},
+ 			Shared_libs: []string{name.vtsDriverName()},
+ 			Cflags: []string{
+ 				"-DSTATIC_TARGET_FQ_NAME=" + name.string(),

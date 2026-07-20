@@ -1,0 +1,17 @@
+on init
+    setprop crypto.ready 1
+
+on fs
+    install_keyring
+    setprop ro.crypto.state encrypted
+    setprop ro.crypto.type file
+
+on post-fs
+    start teei_daemon
+    start vendor.keymaster-4-1-beanpod
+    start vendor.gatekeeper-1-0
+
+on boot
+    start teei_daemon
+    start vendor.keymaster-4-1-beanpod
+    start vendor.gatekeeper-1-0

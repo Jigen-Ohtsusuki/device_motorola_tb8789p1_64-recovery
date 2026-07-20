@@ -1,0 +1,7 @@
+service vendor.keymaster-4-1-beanpod /vendor/bin/hw/android.hardware.keymaster@4.1-service.beanpod
+    interface android.hardware.keymaster@4.0::IKeymasterDevice default
+    interface android.hardware.keymaster@4.1::IKeymasterDevice default
+    class early_hal
+    user system
+    group system drmrpc
+    seclabel u:r:mtk_hal_keymaster:s0

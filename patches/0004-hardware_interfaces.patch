@@ -1,0 +1,20 @@
+diff --git a/neuralnetworks/aidl/utils/Android.bp b/neuralnetworks/aidl/utils/Android.bp
+index 0ccc711..2357040 100644
+--- a/neuralnetworks/aidl/utils/Android.bp
++++ b/neuralnetworks/aidl/utils/Android.bp
+@@ -25,7 +25,6 @@ package {
+ 
+ cc_library_static {
+     name: "neuralnetworks_utils_hal_aidl",
+-    defaults: ["neuralnetworks_utils_defaults"],
+     srcs: ["src/*"],
+     local_include_dirs: ["include/nnapi/hal/aidl/"],
+     export_include_dirs: ["include"],
+@@ -47,7 +46,6 @@ cc_library_static {
+ 
+ cc_test {
+     name: "neuralnetworks_utils_hal_aidl_test",
+-    defaults: ["neuralnetworks_utils_defaults"],
+     srcs: [
+         "test/*.cpp",
+     ],

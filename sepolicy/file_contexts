@@ -1,0 +1,2 @@
+/vendor/bin/teei_daemon u:object_r:tee_exec:s0
+/vendor/bin/hw/android\.hardware\.keymaster@4\.1-service\.beanpod u:object_r:mtk_hal_keymaster_exec:s0

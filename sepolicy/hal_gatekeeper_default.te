@@ -1,0 +1,4 @@
+type mtk_hal_gatekeeper, domain;
+type mtk_hal_gatekeeper_exec, exec_type, file_type;
+init_daemon_domain(mtk_hal_gatekeeper)
+permissive mtk_hal_gatekeeper;

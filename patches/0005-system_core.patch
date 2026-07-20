@@ -1,0 +1,41 @@
+diff --git a/fs_mgr/fs_mgr_fstab.cpp b/fs_mgr/fs_mgr_fstab.cpp
+index 7fc73bd..bde9ad7 100644
+--- a/fs_mgr/fs_mgr_fstab.cpp
++++ b/fs_mgr/fs_mgr_fstab.cpp
+@@ -830,10 +830,16 @@ bool ReadDefaultFstab(Fstab* fstab) {
+     fstab->clear();
+     ReadFstabFromDt(fstab, false /* verbose */);
+ 
++    std::string bootconfig, cmdline;
++    android::base::ReadFileToString("/proc/bootconfig", &bootconfig);
++    android::base::ReadFileToString("/proc/cmdline", &cmdline);
++    bool is_normal_boot = bootconfig.find("force_normal_boot") != std::string::npos ||
++                          cmdline.find("force_normal_boot") != std::string::npos;
++
+     std::string default_fstab_path;
+     // Use different fstab paths for normal boot and recovery boot, respectively
+-    if (access("/system/bin/recovery", F_OK) == 0) {
+-        default_fstab_path = "/etc/recovery.fstab";
++    if (access("/system/bin/recovery", F_OK) == 0 && !is_normal_boot) {
++        default_fstab_path = "/system/etc/recovery.fstab";
+     } else {  // normal boot
+         default_fstab_path = GetFstabPath();
+     }
+diff --git a/init/first_stage_init.cpp b/init/first_stage_init.cpp
+index 5f67ecb..aa8265b 100644
+--- a/init/first_stage_init.cpp
++++ b/init/first_stage_init.cpp
+@@ -103,10 +103,9 @@ void FreeRamdisk(DIR* dir, dev_t dev) {
+ }
+ 
+ bool ForceNormalBoot(const std::string& cmdline, const std::string& bootconfig) {
+-    bool twrp_fastboot = cmdline.find("twrpfastboot=1") == std::string::npos;
+-    bool normal_boot = bootconfig.find("androidboot.force_normal_boot = \"1\"") != std::string::npos ||
+-           cmdline.find("androidboot.force_normal_boot=1") != std::string::npos;
+-    return twrp_fastboot && normal_boot;
++    bool normal_boot = bootconfig.find("force_normal_boot") != std::string::npos ||
++           cmdline.find("force_normal_boot") != std::string::npos;
++    return normal_boot;
+ }
+ 
+ }  // namespace
